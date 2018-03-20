@@ -1,6 +1,6 @@
 
 """
-pyRpc -server.py 
+pyRpc -server.py
 
 Remote Procedure Call support, for exposing local function as public
 services, and calling public services on remote applications
@@ -13,32 +13,32 @@ Written by:
     March 22, 2011
 
 
-Copyright (c) 2012, Justin Israel (justinisrael@gmail.com) 
-All rights reserved. 
+Copyright (c) 2012, Justin Israel (justinisrael@gmail.com)
+All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
-modification, are permitted provided that the following conditions are met: 
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
- * Redistributions of source code must retain the above copyright notice, 
-   this list of conditions and the following disclaimer. 
- * Redistributions in binary form must reproduce the above copyright 
-   notice, this list of conditions and the following disclaimer in the 
-   documentation and/or other materials provided with the distribution. 
- * Neither the name of justinfx.com nor the names of its contributors may 
-   be used to endorse or promote products derived from this software 
-   without specific prior written permission. 
+ * Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+ * Neither the name of justinfx.com nor the names of its contributors may
+   be used to endorse or promote products derived from this software
+   without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
-POSSIBILITY OF SUCH DAMAGE. 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
 
 """
 
@@ -53,31 +53,31 @@ from pyRpc.constants import TEMPDIR
 
 logger = logging.getLogger(__name__)
 
-############################################################# 
+#############################################################
 #############################################################
 ######## PyRpc
-############################################################# 
-############################################################# 
+#############################################################
+#############################################################
 class PyRpc(Thread):
     """
     PyRpc (threading.Thread)
-    
+
     Used by a class that wants to publish local methods and
     functions for public availability. Runs as a thread.
 
     By default a new PyRpc object uses the ipc protocol, which
     is meant for processes running on the same host machine.
-    If you would like to export your services over tcp, you 
+    If you would like to export your services over tcp, you
     can optionally specificy a tcpaddr ip:port to use.
-    
+
     Usage:
         myRpc = PyRpc("com.myCompany.MyApplication") # can be any useful name
         myRpc.publishService(myFunction)
         myRpc.publishService(myFunction2)
         myRpc.start()
     """
-    
-    
+
+
     def __init__(self, name, tcpaddr=None, context=None, workers=1):
         """
         __init__(str name, str tcpaddr=None, Context content=None)
@@ -85,30 +85,30 @@ class PyRpc(Thread):
         Create a new RPC object that can export services to clients.
 
         str name    - the name of this Application
-        str tcpaddr - if None, use a local IPC connection. 
+        str tcpaddr - if None, use a local IPC connection.
                         Otherwise this should be a ip:port address (127.0.0.1:8000)
 
         context     - Optionally pass in another pyzmq Context
-        int workers - Specify the number of worker threads to start, for 
-                        processing incoming requests. Default is to only start 
+        int workers - Specify the number of worker threads to start, for
+                        processing incoming requests. Default is to only start
                         a single worker.
 
-        Please note that the Context will be closed when the server is stopped. 
+        Please note that the Context will be closed when the server is stopped.
         """
 
         super(PyRpc, self).__init__()
-        
+
         self._context = context or zmq.Context.instance()
 
         if tcpaddr:
             self._address = "tcp://%s" % tcpaddr
         else:
             self._address = "ipc://%s/%s.ipc" % (TEMPDIR, name)
-        
+
         self.exit_request = False
-        
+
         self._services = {}
-        self._worker_url = "inproc://workers"
+        self._worker_url = "inproc://workers.%s" % (name,)
 
         self._num_threads = max(int(workers), 1)
 
@@ -127,7 +127,7 @@ class PyRpc(Thread):
                 logger.debug("request received by thread %s: %s" % (current_thread().name, req))
 
                 resp = RpcResponse()
-        
+
                 if req.method == "__services__":
                     service = {'method' : self._serviceListReq}
                 else:
@@ -149,7 +149,7 @@ class PyRpc(Thread):
 
                 socket.send_pyobj(resp)
                 logger.debug("sent response: %s" % resp)
-            
+
             except ZMQError, e:
                 if e.errno == zmq.ETERM and self.exit_request:
                     break
@@ -165,7 +165,7 @@ class PyRpc(Thread):
         """ Not to be called directly. Use start() """
 
         logger.debug("Starting RPC thread loop w/ %d worker(s)" % self._num_threads)
-       
+
         self.receiver = self._context.socket(zmq.ROUTER)
         self.receiver.bind(self._address)
         logger.debug("Listening @ %s" % self._address)
@@ -190,7 +190,7 @@ class PyRpc(Thread):
             self.receiver.close()
             self.dealer.close()
 
-     
+
     def start(self):
         """
         start()
@@ -200,13 +200,13 @@ class PyRpc(Thread):
         if self.receiver is not None:
             raise RuntimeError("Cannot start RPC Server more than once.")
 
-        super(PyRpc, self).start()  
+        super(PyRpc, self).start()
 
-        
+
     def stop(self):
-        """ 
+        """
         stop()
-        
+
         Stop the server thread process
         """
         logger.debug("Stop request made for RPC thread loop")
@@ -222,7 +222,7 @@ class PyRpc(Thread):
     def publishService(self, method):
         """
         publishService (object method)
-        
+
         Publishes the given callable, to be made available to
         remote procedure calls.
         """
@@ -233,15 +233,15 @@ class PyRpc(Thread):
             spec.append("*%s" % argSpec.varargs)
         if argSpec.keywords:
             spec.append("**%s" % argSpec.keywords)
-        
+
         self._services[name] = {'format' : "%s(%s)" % (name, ', '.join(spec)), 'method' : method, 'doc' : method.__doc__}
-    
+
     def _serviceListReq(self):
         services = []
         for name, v in self.services.iteritems():
             services.append({'service' : name, 'format' : v['format'], 'doc' : v['doc']})
         return services
-    
+
     @property
     def services(self):
         """
@@ -250,21 +250,21 @@ class PyRpc(Thread):
         return self._services
 
 
-           
-############################################################# 
+
+#############################################################
 #############################################################
 ######## RpcResponse
-############################################################# 
-#############################################################     
+#############################################################
+#############################################################
 class RpcResponse(object):
     """
     RpcResponse
-    
+
     Represents a response message from a remote call.
     Wraps around the result from the remote call.
     Used by splRpc when replying to a call from RpcConnection.
     """
-    
+
     def __init__(self, result=None, status=-1, error=None):
         self._status = status
         self._result = result
@@ -272,7 +272,7 @@ class RpcResponse(object):
 
     def __repr__(self):
         return "<%s: status:%d>" % (self.__class__.__name__, self.status)
-            
+
     @property
     def status(self):
         return self._status
@@ -282,7 +282,7 @@ class RpcResponse(object):
         if not isinstance(v, int):
             raise TypeError("status value must be an int")
         self._status = v
-        
+
     @property
     def result(self):
         return self._result
@@ -290,14 +290,14 @@ class RpcResponse(object):
     @result.setter
     def result(self, v):
         self._result = v
-        
+
     @property
     def error(self):
         return self._error
-    
+
     @error.setter
     def error(self, v):
         self._error = v
-        
+
 
 
