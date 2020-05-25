@@ -96,7 +96,7 @@ class RpcConnection(object):
         self.exit_request = False
         self._callbacks = {}
 
-        for i in xrange(max(int(workers), 1)):
+        for i in range(max(int(workers), 1)):
             t = Thread(target=self._worker_routine,
                         args=(self._context, self._address, self._work_address))
             t.daemon = True
@@ -128,26 +128,26 @@ class RpcConnection(object):
         return self.call("__services__")
 
 
-    def call(self, method, callback=None, async=False, args=[], kwargs={}):
+    def call(self, method, callback=None, async_=False, args=[], kwargs={}):
         """
-        call(str method, object callback=None, bool async=False, list args=[], dict kwargs={})
+        call(str method, object callback=None, bool async_=False, list args=[], dict kwargs={})
 
         Make a remote call to the given service name, with an optional callback
         and arguments to be used.
         Can be run either blocking or asynchronously.
 
         By default, this method blocks until a response is received.
-        If async=True, returns immediately with an empty RpcResponse. If a callback
+        If async_=True, returns immediately with an empty RpcResponse. If a callback
         was provided, it will be executed when the remote call returns a result.
         """
 
         req = RpcRequest()
         req.method = method
-        req.args   = args
-        req.kwargs = kwargs
-        req.async  = async
+        req.args   = args or []
+        req.kwargs = kwargs or {}
+        req.async_  = async_
 
-        if async or callback:
+        if async_ or callback:
             if callback:
                 req.callback = True
                 self._callbacks[req.id] = callback
@@ -156,7 +156,7 @@ class RpcConnection(object):
 
         logger.debug("Sending a RPC call to method: %s" % method)
 
-        if async or callback:
+        if async_ or callback:
             # push the request down to the workers
             self._async_sender.send_pyobj(req)
             return RpcResponse(None, 0, None)
@@ -242,11 +242,11 @@ class RpcRequest(object):
                                                       len(self.kwargs))
 
     @property
-    def async(self):
+    def async_(self):
         return self._async
 
-    @async.setter
-    def async(self, m):
+    @async_.setter
+    def async_(self, m):
         if not isinstance(m, bool):
             raise TypeError("async value must be True or False")
         self._async = m

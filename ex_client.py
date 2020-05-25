@@ -15,7 +15,7 @@ ASYNC_CALLS = 0
 
 def callback(resp, *args, **kwargs):
 	global ASYNC_CALLS
-	print "Got slow response:", resp.result
+	print("Got slow response:", resp.result)
 	ASYNC_CALLS += 1
 
 if __name__ == "__main__":
@@ -27,16 +27,16 @@ if __name__ == "__main__":
 
 	time.sleep(.1)
 
-	print "Calling slow()"
+	print("Calling slow()")
 
-	for i in xrange(5):	
-		remote.call("slow", async=True, callback=callback)
+	for i in range(5):
+		remote.call("slow", async_=True, callback=callback)
 
-	print "Calling fast()"
+	print("Calling fast()")
 	resp = remote.call("fast")
-	print "Got fast response:", resp.result
+	print("Got fast response:", resp.result)
 
-	print "Waiting on async calls to finish"
+	print("Waiting on async calls to finish")
 	while ASYNC_CALLS < 5:
 		time.sleep(.1)
 
