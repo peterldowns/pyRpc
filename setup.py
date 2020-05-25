@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf-8
+from __future__ import print_function
+from __future__ import unicode_literals
 
 try:
     from setuptools import setup, find_packages
@@ -7,7 +9,7 @@ except ImportError:
     import ez_setup
     ez_setup.use_setuptools()
     from setuptools import setup, find_packages
-    
+
 import os
 
 from pyRpc import __version__

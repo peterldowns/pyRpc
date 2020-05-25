@@ -1,3 +1,5 @@
+# coding: utf-8
+from __future__ import unicode_literals
 
 """
 pyRpc - client.py
@@ -45,6 +47,7 @@ POSSIBILITY OF SUCH DAMAGE.
 import logging
 from uuid import uuid4
 from threading import Thread, current_thread
+from six import text_type
 
 import zmq
 from zmq import ZMQError
@@ -71,7 +74,7 @@ class RpcConnection(object):
 
     Usage:
         def processResponse(rpcResponse):
-            print rpcResponse.result
+            print(rpcResponse.result)
 
         rpc = PyRpc.RpcConnection("com.myCompany.MyApplication")  # any useful name
         rpc.call("myFunction", callback=processResponse, args=(1, "a"), kwargs={'flag':True, 'option':"blarg"})
@@ -258,8 +261,8 @@ class RpcRequest(object):
 
     @method.setter
     def method(self, m):
-        if not isinstance(m, str):
-            raise TypeError("method value must be a string name")
+        if not isinstance(m, text_type):
+            raise TypeError("method value must be a text name (unicode)")
         self._method = m
 
     @property

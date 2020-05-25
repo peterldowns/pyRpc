@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-
+# coding: utf-8
+from __future__ import print_function
+from __future__ import unicode_literals
 """
 In this example, make sure to start the server first,
 as this client will try and communicate immediately.
