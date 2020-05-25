@@ -240,7 +240,7 @@ class PyRpc(Thread):
 
     def _serviceListReq(self):
         services = []
-        for name, v in self.services.iteritems():
+        for name, v in self.services.items():
             services.append({'service' : name, 'format' : v['format'], 'doc' : v['doc']})
         return services
 
